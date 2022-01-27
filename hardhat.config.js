@@ -1,4 +1,7 @@
 require("@nomiclabs/hardhat-waffle")
+require("dotenv").config()
+
+const { API_URL, PRIVATE_KEY, ETHERSCAN_API } = process.env
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -17,5 +20,29 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.0",
+  solidity: {
+    version: "0.8.0",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
+  networks: {
+    rinkeby: {
+      url: API_URL,
+      accounts: [PRIVATE_KEY],
+      gas: 2100000,
+      gasPrice: 8000000000,
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      gas: 2100000,
+      gasPrice: 8000000000,
+    },
+  },
+  etherscan: {
+    apiKey: ETHERSCAN_API,
+  },
 }
