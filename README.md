@@ -20,3 +20,8 @@ npm install @openzeppelin/contracts
 #### test setup
 
 npx hardhat run scripts/sample-script.js
+
+## remove starter files
+
+sample-test.js under test. Also, delete sample-script.js under scripts. Then, delete Greeter.sol under contracts.
+Just the Files not the Folders!
