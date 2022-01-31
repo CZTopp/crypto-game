@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import "./styles/App.css"
-import SelectCharacter from "./Components/SelectCharacter"
+import SelectCharacter from "./Components/SelectCharacter/SelectCharacter"
+import Arena from "./Components/Arena/Arena"
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants"
 import cyrptoGame from "./utils/CryptoGame.json"
 import twitterLogo from "./assets/twitter-logo.svg"
@@ -18,6 +19,44 @@ const App = () => {
    * Right under current account, setup this new state property
    */
   const [characterNFT, setCharacterNFT] = useState(null)
+
+  useEffect(() => {
+    checkIfWalletIsConnected()
+    checkNetwork()
+  }, [])
+
+  useEffect(() => {
+    /*
+     * The function we will call that interacts with out smart contract
+     */
+    const fetchNFTMetadata = async () => {
+      console.log("Checking for Character NFT on address:", currentAccount)
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const gameContract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        cyrptoGame.abi,
+        signer
+      )
+
+      const txn = await gameContract.checkIfUserHasNFT()
+      if (txn.name) {
+        console.log("User has character NFT")
+        setCharacterNFT(transformCharacterData(txn))
+      } else {
+        console.log("No character NFT found")
+      }
+    }
+
+    /*
+     * We only want to run this, if we have a connected wallet
+     */
+    if (currentAccount) {
+      console.log("CurrentAccount:", currentAccount)
+      fetchNFTMetadata()
+    }
+  }, [currentAccount])
 
   // Actions
   const checkIfWalletIsConnected = async () => {
@@ -70,6 +109,11 @@ const App = () => {
        */
     } else if (currentAccount && !characterNFT) {
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />
+      /*
+       * If there is a connected wallet and characterNFT, it's time to battle!
+       */
+    } else if (currentAccount && characterNFT) {
+      return <Arena characterNFT={characterNFT} />
     }
   }
 
@@ -110,50 +154,13 @@ const App = () => {
       console.log(error)
     }
   }
-  useEffect(() => {
-    checkIfWalletIsConnected()
-    checkNetwork()
-  }, [])
-
-  useEffect(() => {
-    /*
-     * The function we will call that interacts with out smart contract
-     */
-    const fetchNFTMetadata = async () => {
-      console.log("Checking for Character NFT on address:", currentAccount)
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      const signer = provider.getSigner()
-      const gameContract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        cyrptoGame.abi,
-        signer
-      )
-
-      const txn = await gameContract.checkIfUserHasNFT()
-      if (txn.name) {
-        console.log("User has character NFT")
-        setCharacterNFT(transformCharacterData(txn))
-      } else {
-        console.log("No character NFT found")
-      }
-    }
-
-    /*
-     * We only want to run this, if we have a connected wallet
-     */
-    if (currentAccount) {
-      console.log("CurrentAccount:", currentAccount)
-      fetchNFTMetadata()
-    }
-  }, [currentAccount])
 
   return (
     <div className="App">
       <div className="container">
         <div className="header-container">
-          <p className="header gradient-text">⚔️ Metaverse Slayer ⚔️</p>
-          <p className="sub-text">Team up to protect the Metaverse!</p>
+          <p className="header gradient-text">⚔️ Colony Slayer ⚔️</p>
+          <p className="sub-text">Team up to protect the MotherVerse!</p>
           {/* This is where our button and image code used to be!
            *	Remember we moved it into the render method.
            */}
