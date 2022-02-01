@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import "./styles/App.css"
 import SelectCharacter from "./Components/SelectCharacter/SelectCharacter"
 import Arena from "./Components/Arena/Arena"
+import LoadingIndicator from "./Components/LoadingIndicator"
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants"
 import cyrptoGame from "./utils/CryptoGame.json"
 import twitterLogo from "./assets/twitter-logo.svg"
@@ -14,21 +15,16 @@ const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`
 const App = () => {
   // State
   const [currentAccount, setCurrentAccount] = useState(null)
-
-  /*
-   * Right under current account, setup this new state property
-   */
   const [characterNFT, setCharacterNFT] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    setIsLoading(true)
     checkIfWalletIsConnected()
     checkNetwork()
   }, [])
 
   useEffect(() => {
-    /*
-     * The function we will call that interacts with out smart contract
-     */
     const fetchNFTMetadata = async () => {
       console.log("Checking for Character NFT on address:", currentAccount)
 
@@ -47,11 +43,9 @@ const App = () => {
       } else {
         console.log("No character NFT found")
       }
+      setIsLoading(false)
     }
 
-    /*
-     * We only want to run this, if we have a connected wallet
-     */
     if (currentAccount) {
       console.log("CurrentAccount:", currentAccount)
       fetchNFTMetadata()
@@ -65,6 +59,7 @@ const App = () => {
 
       if (!ethereum) {
         console.log("Make sure you have MetaMask!")
+        setIsLoading(false)
         return
       } else {
         console.log("We have the ethereum object", ethereum)
@@ -82,13 +77,14 @@ const App = () => {
     } catch (error) {
       console.log(error)
     }
+    setIsLoading(false)
   }
 
   // Render Methods
   const renderContent = () => {
-    /*
-     * Scenario #1
-     */
+    if (isLoading) {
+      return <LoadingIndicator />
+    }
     if (!currentAccount) {
       return (
         <div className="connect-wallet-container">
@@ -104,22 +100,15 @@ const App = () => {
           </button>
         </div>
       )
-      /*
-       * Scenario #2
-       */
     } else if (currentAccount && !characterNFT) {
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />
-      /*
-       * If there is a connected wallet and characterNFT, it's time to battle!
-       */
     } else if (currentAccount && characterNFT) {
-      return <Arena characterNFT={characterNFT} />
+      return (
+        <Arena characterNFT={characterNFT} setCharacterNFT={setCharacterNFT} />
+      )
     }
   }
 
-  /*
-   * Implement your connectWallet method here
-   */
   const connectWalletAction = async () => {
     try {
       const { ethereum } = window
@@ -129,16 +118,10 @@ const App = () => {
         return
       }
 
-      /*
-       * Fancy method to request access to account.
-       */
       const accounts = await ethereum.request({
         method: "eth_requestAccounts",
       })
 
-      /*
-       * Boom! This should print out public address once we authorize Metamask.
-       */
       console.log("Connected", accounts[0])
       setCurrentAccount(accounts[0])
     } catch (error) {
@@ -155,16 +138,25 @@ const App = () => {
     }
   }
 
+  const mintHandler = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner()
+    const gameContract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      cyrptoGame.abi,
+      signer
+    )
+    await gameContract.mintCharacterNFT(2)
+  }
+
   return (
     <div className="App">
       <div className="container">
         <div className="header-container">
           <p className="header gradient-text">⚔️ Colony Slayer ⚔️</p>
-          <p className="sub-text">Team up to protect the MotherVerse!</p>
-          {/* This is where our button and image code used to be!
-           *	Remember we moved it into the render method.
-           */}
+          <p className="sub-text">Team up to protect the MotherLandVerse!</p>
           {renderContent()}
+          {/* <button onClick={mintHandler}>Mint</button> */}
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
