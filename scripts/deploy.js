@@ -3,9 +3,9 @@ const main = async () => {
   const gameContract = await gameContractFactory.deploy(
     ["Dogon", "Zulu", "Masai"], // Names
     [
-      "https://i.imgur.com/Tsu8OTH.jpg", // Images
-      "https://i.imgur.com/12kEPRn.jpg",
-      "https://i.imgur.com/YUK4Aej.jpg",
+      "QmVA6SkVnQVLbkN9cKS8oiuzBXJSdSHeMX6Fnawd2fJKLu", // Images
+      "QmfBqTFWZiwbSUUNUTBqHNS4KMR6jgprQiWQVTEYAeLpG9",
+      "QmXjyVgA1tpUzehGaYjWFbcWFc13MKXKuVNyBGkhegaYJQ",
     ],
     [450, 500, 400], // HP values
     [100, 150, 125], // Attack damage values
